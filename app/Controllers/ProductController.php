@@ -8,6 +8,13 @@ class ProductController
 {
     public function index(): void
     {
-        echo 'yeah';
+        echo 'We Loaded the landing route';
+        
+    }
+
+    public function store(): void
+    {
+
+        echo 'We Loaded the store route';
     }
 }

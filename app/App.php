@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App;
 
 use App\Exceptions\RouteNotFoundException;
+use Throwable;
 
 class App
 {
     private static DB $db;
 
-    public function __construct(protected Router $router, protected array $request, protected Config $config)
+
+    public function __construct(protected Route $router, protected array $request, protected Config $config)
     {
         static::$db = new DB($config->db ?? []);
     }
@@ -22,9 +24,10 @@ class App
 
     public function run()
     {
+
         try {
-            echo $this->router->resolve($this->request['uri'], strtolower($this->request['method']));
-        } catch (RouteNotFoundException) {
+            echo $this->router->start($this->request['uri'], strtolower($this->request['method']));
+        } catch (Throwable) {
             http_response_code(404);
         }
     }
