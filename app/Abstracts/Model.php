@@ -9,20 +9,20 @@ use App\Config;
 
 abstract class Model
 {
-    private static DB $db;
-    public function __construct()
-    {
-        $newConfig = new Config($_ENV);
-
-        static::$db = new DB($newConfig->db);
-    }
+    private static ?DB $db = null;
 
     public static function db(): DB
     {
+        if (!static::$db) {
+            $newConfig = new Config($_ENV);
+            static::$db = new DB($newConfig->db);
+        }
+
         return static::$db;
     }
 
-    abstract public function getAll(): array | false;
-    abstract public function get(string $query): array | false;
-    abstract public function create(array $data): string;
+    abstract public function getAll(): array;
+    abstract public function get(string $sku): array;
+    abstract public function create(array $data): array;
+    abstract protected function dataResponse(int $code, string $message, array $data): array;
 }

@@ -13,21 +13,23 @@ class ProductController extends Controller
 
     private function productModel(): ProductModel
     {
-        if (!self::$productModel) {
-            self::$productModel = new ProductModel();
+        if (!static::$productModel) {
+            static::$productModel = new ProductModel();
         }
 
-        return self::$productModel;
+        return static::$productModel;
     }
 
     protected function getAllProducts(): void
     {
-        echo json_encode($this->productModel()->getAll());
+        $response = $this->productModel()->getAll();
+        echo json_encode($response);
     }
 
     protected function getProductBySKU(string $sku): void
     {
-        echo json_encode($this->productModel()->get($sku));
+        $response = $this->productModel()->get($sku);
+        echo json_encode($response);
     }
 
     protected function resolveGetRequest(): void
@@ -50,7 +52,9 @@ class ProductController extends Controller
 
     public function store(): void
     {
+        $response = $this->productModel()->create(['Holda']);
 
-        echo json_encode($this->productModel()->create(['Holda']));
+        http_response_code($response['status']);
+        echo json_encode($response);
     }
 }
