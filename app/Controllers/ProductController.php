@@ -20,16 +20,24 @@ class ProductController extends Controller
         return static::$productModel;
     }
 
+    protected function dataResponse(int $code, string $message, array $data = null): array
+    {
+        $response =  ['status' => $code, 'message' => $message];
+        return  is_array($data) ? [...$response, 'data' => empty($data) ? [] : $data] :  $response;
+    }
+
     protected function getAllProducts(): void
     {
         $response = $this->productModel()->getAll();
-        echo json_encode($response);
+        $message = empty($response) ? 'No products found.' : 'Products fetched successfully.';
+        echo json_encode($this->dataResponse(200, $message, $response));
     }
 
     protected function getProductBySKU(string $sku): void
     {
         $response = $this->productModel()->get($sku);
-        echo json_encode($response);
+        $message = empty($response) ? 'No products found.' : "Product with sku: $sku fetched successfully.";
+        echo json_encode($this->dataResponse(200, $message, $response));
     }
 
     protected function resolveGetRequest(): void

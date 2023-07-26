@@ -24,5 +24,4 @@ abstract class Model
     abstract public function getAll(): array;
     abstract public function get(string $sku): array;
     abstract public function create(array $data): array;
-    abstract protected function dataResponse(int $code, string $message, array $data): array;
 }
