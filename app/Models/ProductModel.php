@@ -4,12 +4,22 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Model;
+use App\Abstracts\Model;
 
 class ProductModel extends Model
 {
-    public function index(): void
+    public function getAll(): array | false
     {
-        echo 'yeah';
+        return ['the get all code'];
+    }
+
+    public function get(string $query): array | false
+    {
+        return ['the get code'];
+    }
+
+    public function create(array $data): string
+    {
+        return 'the create string';
     }
 }

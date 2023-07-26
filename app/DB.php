@@ -6,7 +6,7 @@ namespace App;
 
 use PDO;
 
-class DB
+class DB extends ErrorHandler
 {
     private PDO $pdo;
 
@@ -25,7 +25,7 @@ class DB
                 $config['options'] ?? $defaultOptions
             );
         } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage(), (int) $e->getCode());
+            self::handleThrowableError($e);
         }
     }
 

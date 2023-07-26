@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use Throwable;
+
 class Route extends ErrorHandler
 {
     private static array $routes;
@@ -20,31 +22,35 @@ class Route extends ErrorHandler
 
     public static function start()
     {
-        $requestUri = $_SERVER['PATH_INFO'];
-        $requestMethod = strtolower($_SERVER['REQUEST_METHOD']);
-        $routes = self::$routes;
-        $action = $routes[$requestMethod][$requestUri];
+        try {
+
+            $requestUri = $_SERVER['PATH_INFO'];
+            $requestMethod = strtolower($_SERVER['REQUEST_METHOD']);
+            $routes = self::$routes;
+            $action = $routes[$requestMethod][$requestUri] ?? null;
 
 
-        if (!isset($routes[$requestMethod])) {
-            self::handleError(405, 'Invalid request method, only GET and POST requests allowed. Method: ' . strtoupper($requestMethod));
-        }
-
-        if (!isset($action)) {
-            self::handleError(404, 'API route not found.');
-        }
-
-        [$class, $method] = $action;
-
-        if (class_exists($class)) {
-            $class = new $class();
-
-            if (method_exists($class, $method)) {
-                return call_user_func_array([$class, $method], []);
+            if (!isset($routes[$requestMethod])) {
+                self::handleError(405, 'Invalid request method, only GET and POST requests allowed. Method: ' . strtoupper($requestMethod));
             }
-        }
-        // echo json_encode(['requestUri' => $requestUri, 'requestMethod' => $requestMethod, 'routes' => $routes]);
 
-        self::handleError(400, "Invalid action format. Expected [ClassName::class, 'methodName'] at index.php");
+            if (!isset($action)) {
+                self::handleError(404, 'API route not found.');
+            }
+
+            [$class, $method] = $action;
+
+            if (class_exists($class)) {
+                $class = new $class();
+
+                if (method_exists($class, $method)) {
+                    return call_user_func_array([$class, $method], []);
+                }
+            }
+
+            self::handleError(400, "Invalid action format. Expected [ClassName::class, 'methodName'] at index.php");
+        } catch (Throwable $e) {
+            self::handleThrowableError($e);
+        }
     }
 }

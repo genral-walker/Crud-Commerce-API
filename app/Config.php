@@ -6,7 +6,7 @@ namespace App;
 
 class Config
 {
-    protected array $config = [];
+    private array $config = [];
 
     public function __construct(array $env)
     {
