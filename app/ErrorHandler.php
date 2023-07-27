@@ -9,7 +9,7 @@ use Throwable;
 class ErrorHandler
 {
 
-    public static function handleError(int $status, string $message): void
+    public static function handleError(int $status, string|array $message): void
     {
         http_response_code($status);
 
