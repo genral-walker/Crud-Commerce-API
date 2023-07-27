@@ -21,6 +21,7 @@ abstract class Model
         return static::$db;
     }
 
+
     abstract public function getAll(): array;
     abstract public function get(string $sku): array;
     abstract public function create(array $data): array;

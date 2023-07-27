@@ -43,8 +43,10 @@ class ProductController extends Controller
 
         if ($errors) ErrorHandler::handleError(400, $errors);
 
-        $validatedData = [];
-        echo 'we got here';
+        $this->productModel()->create([...$requestBody, 'productCategories' => self::PRODUCT_CATEGORIES]);
+
+        http_response_code(201);
+        echo json_encode($this->dataResponse(201, 'Product created successfully.'));
     }
 
 
@@ -118,7 +120,7 @@ class ProductController extends Controller
                     $unitValue =  $requestBody[$key] ?? null;
 
                     if (!is_int($unitValue)) {
-                        $errors[] = "$key can only be an integer.";
+                        $errors[] = "$key should be an integer.";
                     }
                 };
 
