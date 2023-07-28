@@ -29,6 +29,13 @@ class DB extends ErrorHandler
         }
     }
 
+    public function __get($name)
+    {
+        if ($name === 'PDO') {
+            return $this->pdo;
+        }
+    }
+
     public function __call(string $name, array $arguments)
     {
         return call_user_func_array([$this->pdo, $name], $arguments);

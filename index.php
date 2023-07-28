@@ -7,7 +7,7 @@ use App\Route;
 
 
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Methods: GET, POST, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Accept');
 header("Content-type: application/json; charset=UTF-8");
 
@@ -20,5 +20,6 @@ $dotenv->load();
 
 Route::get('/product/get', [ProductController::class, 'index']);
 Route::post('/product/saveApi', [ProductController::class, 'store']);
+Route::delete('/product/delete', [ProductController::class, 'destroy']);
 
 Route::start();

@@ -25,7 +25,7 @@ class ErrorHandler
     {
         http_response_code(500);
         echo json_encode([
-            "code" => 500,
+            "status" => 500,
             "message" => $e->getMessage(),
             "file" => $e->getFile(),
             "line" => $e->getLine()

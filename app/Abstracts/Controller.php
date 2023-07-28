@@ -8,11 +8,26 @@ use App\Models\ProductModel;
 
 abstract class Controller
 {
-    abstract protected function productModel(): ProductModel;
+    private static ?ProductModel $productModel = null;
+    const PRODUCT_CATEGORIES = [
+        'dvd' => 'size',
+        'book' => 'weight',
+        'furniture' => ['height', 'width', 'length']
+    ];
+    protected function productModel(): ProductModel
+    {
+        if (!static::$productModel) {
+            static::$productModel = new ProductModel();
+        }
+
+        return static::$productModel;
+    }
 
     abstract public function index(): void;
 
     abstract public function store(): void;
+
+    abstract public function destroy(): void;
 
     abstract protected function resolveGetRequest(): void;
 

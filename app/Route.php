@@ -20,6 +20,11 @@ class Route extends ErrorHandler
         self::$routes['post'][$route] = $action;
     }
 
+    public static function delete(string $route, array $action): void
+    {
+        self::$routes['delete'][$route] = $action;
+    }
+
     public static function start()
     {
         try {
@@ -31,7 +36,7 @@ class Route extends ErrorHandler
 
 
             if (!isset($routes[$requestMethod])) {
-                self::handleError(405, 'Invalid request method, only GET and POST requests allowed. Method: ' . strtoupper($requestMethod));
+                self::handleError(405, 'Invalid request method, only GET, POST and DELETE requests allowed. Method: ' . strtoupper($requestMethod));
             }
 
             if (!isset($action)) {

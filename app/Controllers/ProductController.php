@@ -6,28 +6,9 @@ namespace App\Controllers;
 
 use App\Abstracts\Controller;
 use App\ErrorHandler;
-use App\Models\ProductModel;
 
 class ProductController extends Controller
 {
-    private static ?ProductModel $productModel = null;
-    const PRODUCT_CATEGORIES = [
-        'dvd' => 'size',
-        'book' => 'weight',
-        'furniture' => ['height', 'width', 'length']
-    ];
-
-
-    protected function productModel(): ProductModel
-    {
-        if (!static::$productModel) {
-            static::$productModel = new ProductModel();
-        }
-
-        return static::$productModel;
-    }
-
-
     public function index(): void
     {
         $this->resolveGetRequest();
@@ -43,10 +24,79 @@ class ProductController extends Controller
 
         if ($errors) ErrorHandler::handleError(400, $errors);
 
-        $this->productModel()->create([...$requestBody, 'productCategories' => self::PRODUCT_CATEGORIES]);
+        $validatedData = [
+            ':sku' => $requestBody['sku'],
+            ':name' => $requestBody['name'],
+            ':price' => $requestBody['price'],
+            ':productType' => $requestBody['productType']
+        ];
+
+        $productType = $requestBody['productType'];
+        $productCategory = self::PRODUCT_CATEGORIES[$productType];
+
+        if (is_array($productCategory)) {
+
+            foreach ($productCategory as $category) {
+                $validatedData[] = [":$category" => $requestBody[$category]];
+            }
+
+            $validatedData[] = [":size" => null];
+            $validatedData[] = [":weight" => null];
+        } else {
+
+            $validatedData[] = [":$productCategory" => $requestBody[$productCategory]];
+
+            $validatedData[] = [":height" => null];
+            $validatedData[] = [":width" => null];
+            $validatedData[] = [":length" => null];
+
+            $nonDimensionTypes = ['weight', 'size'];
+
+            $indexToRemove = array_search($productCategory, $nonDimensionTypes);
+
+            unset($nonDimensionTypes[$indexToRemove]);
+            $nonDimensionTypes =  array_values($nonDimensionTypes);
+
+            $validatedData[] = [":$nonDimensionTypes[0]" => null];
+        }
+
+        function flattenArray($array)
+        {
+            $results = [];
+
+            foreach ($array as $key => $value) {
+                if (is_array($value) && !empty($value)) {
+                    $results = array_merge($results, flattenArray($value));
+                } else {
+                    $results[$key] = $value;
+                }
+            }
+
+            return $results;
+        }
+
+        $this->productModel()->create(flattenArray($validatedData));
 
         http_response_code(201);
         echo json_encode($this->dataResponse(201, 'Product created successfully.'));
+    }
+
+
+
+    public function destroy(): void
+    {
+        $requestBody = file_get_contents('php://input');
+        $requestBody = json_decode($requestBody, true) ?? [];
+
+        if (count($requestBody) > 0) {
+            $rowCount = $this->productModel()->delete($requestBody);
+            $isMultiple = $rowCount > 1 ? 's' : '';
+            $message = $rowCount ? $rowCount . ' product' . $isMultiple . ' deleted successfully.' : 'No product deleted';
+
+            echo json_encode($this->dataResponse(200, $message));
+        } else {
+            ErrorHandler::handleError(400, "No product selected");
+        }
     }
 
 
@@ -101,11 +151,11 @@ class ProductController extends Controller
 
         $price = $requestBody['price'] ?? null;
 
-        if ($price && !is_numeric($price)) {
-            $errors[] = 'Price can only be an integer or float.';
+        if ($price && (!is_numeric($price) || $price < 1)) {
+            $errors[] = 'Price can only be a positive integer or float.';
         }
 
-        $productType = $requestBody['productType'] ?? null; //dvd, book, furniture
+        $productType = $requestBody['productType'] ?? null;
 
         if ($productType) {
             if (!key_exists($productType, self::PRODUCT_CATEGORIES)) {
@@ -114,13 +164,13 @@ class ProductController extends Controller
             } else {
 
 
-                $unit = self::PRODUCT_CATEGORIES[$productType]; //size, weight, [height, width, length]
+                $unit = self::PRODUCT_CATEGORIES[$productType];
 
                 $notIntError = function (array $requestBody, string $key) use (&$errors): void {
                     $unitValue =  $requestBody[$key] ?? null;
 
-                    if (!is_int($unitValue)) {
-                        $errors[] = "$key should be an integer.";
+                    if (!is_int($unitValue) || $unitValue < 1) {
+                        $errors[] = "$key should be a positive integer.";
                     }
                 };
 
