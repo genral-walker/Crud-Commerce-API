@@ -24,58 +24,25 @@ class ProductController extends Controller
 
         if ($errors) ErrorHandler::handleError(400, $errors);
 
+
+        $productType = $requestBody['productType'];
+
+        $productCategory = $this->getProductCategory($productType);
+
         $validatedData = [
             ':sku' => $requestBody['sku'],
             ':name' => $requestBody['name'],
             ':price' => $requestBody['price'],
-            ':productType' => $requestBody['productType']
+            ':productType' => $productType
         ];
 
-        $productType = $requestBody['productType'];
-        $productCategory = self::PRODUCT_CATEGORIES[$productType];
+        $attributes = $productCategory->getAttributes($requestBody);
 
-        if (is_array($productCategory)) {
-
-            foreach ($productCategory as $category) {
-                $validatedData[] = [":$category" => $requestBody[$category]];
-            }
-
-            $validatedData[] = [":size" => null];
-            $validatedData[] = [":weight" => null];
-        } else {
-
-            $validatedData[] = [":$productCategory" => $requestBody[$productCategory]];
-
-            $validatedData[] = [":height" => null];
-            $validatedData[] = [":width" => null];
-            $validatedData[] = [":length" => null];
-
-            $nonDimensionTypes = ['weight', 'size'];
-
-            $indexToRemove = array_search($productCategory, $nonDimensionTypes);
-
-            unset($nonDimensionTypes[$indexToRemove]);
-            $nonDimensionTypes =  array_values($nonDimensionTypes);
-
-            $validatedData[] = [":$nonDimensionTypes[0]" => null];
+        foreach ($attributes as $attributeKey => $attributeValue) {
+            $validatedData[":$attributeKey"] = $attributeValue;
         }
 
-        function flattenArray($array)
-        {
-            $results = [];
-
-            foreach ($array as $key => $value) {
-                if (is_array($value) && !empty($value)) {
-                    $results = array_merge($results, flattenArray($value));
-                } else {
-                    $results[$key] = $value;
-                }
-            }
-
-            return $results;
-        }
-
-        $this->productModel()->create(flattenArray($validatedData));
+        $this->productModel()->create($validatedData);
 
         http_response_code(201);
         echo json_encode($this->dataResponse(201, 'Product created successfully.'));
@@ -155,37 +122,10 @@ class ProductController extends Controller
             $errors[] = 'Price can only be a positive integer or float.';
         }
 
-        $productType = $requestBody['productType'] ?? null;
+        $productType = $requestBody['productType'] ?? '';
 
-        if ($productType) {
-            if (!key_exists($productType, self::PRODUCT_CATEGORIES)) {
+        $productType = $this->getProductCategory($productType);
 
-                $errors[] = 'productType can only be one of three values: dvd, book, furniture.';
-            } else {
-
-
-                $unit = self::PRODUCT_CATEGORIES[$productType];
-
-                $notIntError = function (array $requestBody, string $key) use (&$errors): void {
-                    $unitValue =  $requestBody[$key] ?? null;
-
-                    if (!is_int($unitValue) || $unitValue < 1) {
-                        $errors[] = "$key should be a positive integer.";
-                    }
-                };
-
-                if (is_array($unit)) {
-
-                    foreach ($unit as $key) {
-                        $notIntError($requestBody, $key);
-                    }
-                } else {
-
-                    $notIntError($requestBody, $unit);
-                }
-            }
-        }
-
-        return $errors;
+        return [...$errors, ...$productType->validateRequestBody($requestBody)];
     }
 }

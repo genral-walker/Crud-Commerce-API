@@ -11,7 +11,7 @@ abstract class Model
 {
     private static ?DB $db = null;
 
-    public static function db(): DB
+    public function db(): DB
     {
         if (!static::$db) {
             $newConfig = new Config($_ENV);

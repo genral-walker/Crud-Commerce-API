@@ -29,7 +29,7 @@ class Route extends ErrorHandler
     {
         try {
 
-            $requestUri = $_SERVER['PATH_INFO'];
+            $requestUri = $_SERVER['PATH_INFO'] ?? null;
             $requestMethod = strtolower($_SERVER['REQUEST_METHOD']);
             $routes = self::$routes;
             $action = $routes[$requestMethod][$requestUri] ?? null;
