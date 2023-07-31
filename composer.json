@@ -4,15 +4,6 @@
       "App\\": "app/"
     }
   },
-  "scripts": {
-    "dev": [
-      "composer dump-autoload",
-      ""
-    ],
-    "build": [
-      "composer dump-autoload -o"
-    ]
-  },
   "require": {
     "vlucas/phpdotenv": "^5.5"
   }

@@ -22,13 +22,28 @@ class ErrorHandler
 
     public static function handleThrowableError(Throwable $e): void
     {
-        http_response_code(500);
-        echo json_encode([
-            "status" => 500,
-            "message" => $e->getMessage(),
-            "file" => $e->getFile(),
-            "line" => $e->getLine()
-        ]);
+        $word1 = "Integrity constraint violation: 1062 Duplicate entry";
+        $word2 = "for key 'sku'";
+
+        $message = $e->getMessage();
+        $response = [];
+
+        if (strpos($message, $word1) !== false && strpos($message, $word2) !== false) {
+            $response = [
+                "status" => 400,
+                "message" => 'Duplicate entry. Product with sku already created, please change the sku.'
+            ];
+        } else {
+            $response = [
+                "status" => 500,
+                "message" => $message,
+                "file" => $e->getFile(),
+                "line" => $e->getLine()
+            ];
+        }
+
+        http_response_code($response['status']);
+        echo json_encode($response);
 
         exit();
     }

@@ -15,7 +15,7 @@ abstract class ProductCategory
             'book' => 'weight',
             'furniture' => ['height', 'width', 'length']
         ];
-        
+
         $this->property = $productProperties[$category];
     }
 
