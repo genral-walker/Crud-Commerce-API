@@ -29,10 +29,25 @@ class Route extends ErrorHandler
     {
         try {
 
-            $requestUri = $_SERVER['PATH_INFO'] ?? null;
+            $getRequestURL = function (): string {
+                $requiredURL = strstr($_SERVER['REQUEST_URI'], '/product');
+
+                if ($requiredURL !== false) {
+                    $questionMarkPosition = strpos($requiredURL, '?');
+
+                    if ($questionMarkPosition !== false) {
+                        return substr($requiredURL, 0, $questionMarkPosition);
+                    } else {
+                        return $requiredURL;
+                    }
+                }
+                return '';
+            };
+
+
             $requestMethod = strtolower($_SERVER['REQUEST_METHOD']);
             $routes = self::$routes;
-            $action = $routes[$requestMethod][$requestUri] ?? null;
+            $action = $routes[$requestMethod][$getRequestURL()] ?? null;
 
 
             if (!isset($routes[$requestMethod])) {
